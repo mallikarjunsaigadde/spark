@@ -1,0 +1,4 @@
+This is Spark Training
+This is Spark with Scala Training
+Scala is Functional programming
+Spark is lightning fast cluster computing framework
