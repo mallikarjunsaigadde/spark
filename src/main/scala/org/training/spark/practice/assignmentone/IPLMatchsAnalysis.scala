@@ -40,7 +40,7 @@ object IPLMatchUtil {
 
   def extractMatchDetails(data: String): MatchDetails = {
     val splits = data.split(",")
-    val matchDetails = new MatchDetails(splits(7), splits(11).toInt, splits(12).toInt, splits(14))
+    val matchDetails = MatchDetails(splits(7), splits(11).toInt, splits(12).toInt, splits(14))
     matchDetails
   }
 }
