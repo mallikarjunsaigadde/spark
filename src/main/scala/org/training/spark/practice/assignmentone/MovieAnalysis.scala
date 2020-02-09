@@ -16,20 +16,25 @@ object MovieAnalysis {
     val movieDetailsBrdCst = spkCxt.broadcast(movieDetailsMap())
     val movieIDKeyRDD = ratingRDD.filter(eachRating => {
       val splits = eachRating.split("::")
-      movieDetailsBrdCst.value.getOrElse(splits(1),"N/A")!="N/A"
+      movieDetailsBrdCst.value.getOrElse(splits(1), "N/A") != "N/A"
     }).map(eachRating => {
       val splits = eachRating.split("::")
-      (splits(1), (movieDetailsBrdCst.value.get(splits(1)),1))
+      (splits(1), (movieDetailsBrdCst.value.get(splits(1)).get.name, 1, splits(2).trim.toDouble))
     })
+    val mostViewedMvsRDD = movieIDKeyRDD.reduceByKey((accr, each) => (each._1, accr._2 + each._2, accr._3 + each._3)).persist()
+    println("\n\n Top ten most viewed movies with their movies Name (Descending) \n\n")
+    val mostViewTenRDD = mostViewedMvsRDD.collect().sortBy(_._2._2).reverse.take(10)
+    mostViewTenRDD.foreach(each => println("Movie: " + each._2._1 + " *****************************views: " + each._2._2))
+    println("\n\n Top twenty rated movies (Condition: The movie should be rated/viewed by at least 40 users) \n\n")
+    val mostRatedTwentyRDD = mostViewedMvsRDD.filter(each => each._2._2 >= 40).collect().sortBy(each => each._2._3 / each._2._2).reverse.take(20)
+    mostRatedTwentyRDD.foreach(each => println("Movie: " + each._2._1 + " *****************************Rating: " + each._2._3 / each._2._2))
+
     val usrDetailsBrdCst = spkCxt.broadcast(userDetailsMap())
-    val mostViewedMvsRDD=movieIDKeyRDD.reduceByKey((accr,each)=>(each._1,accr._2+each._2))
-    val mostViewTenRDD=mostViewedMvsRDD.collect().sortBy(_._2._2).reverse.take(10)
-    mostViewTenRDD.foreach(each=>println("Movie: "+each._2._1+" *****************************views: "+each._2._2))
   }
 
-  def movieDetailsMap():  Map[String,Movie] = {
+  def movieDetailsMap(): Map[String, Movie] = {
     val movieFileList = scala.io.Source.fromFile("/home/cloudera/projects/spark-core/src/main/resources/assignmentone/moviedata/movies.dat").getLines().toList
-    val movieMap=movieFileList.map(eachMovie => {
+    val movieMap = movieFileList.map(eachMovie => {
       val splits = eachMovie.split("::")
       (splits(0), Movie(splits(1), splits(2)))
     }).toMap
@@ -42,9 +47,9 @@ object MovieAnalysis {
 
   case class User(age: String, occupation: String)
 
-  def userDetailsMap(): Map[String,User]= {
+  def userDetailsMap(): Map[String, User] = {
     val usrFileList = scala.io.Source.fromFile("/home/cloudera/projects/spark-core/src/main/resources/assignmentone/moviedata/users.dat").getLines().toList
-    val userMap=usrFileList.map(eachUsr => {
+    val userMap = usrFileList.map(eachUsr => {
       val splits = eachUsr.split("::")
       val age = splits(2).toInt
       var ageRng = splits(2)
