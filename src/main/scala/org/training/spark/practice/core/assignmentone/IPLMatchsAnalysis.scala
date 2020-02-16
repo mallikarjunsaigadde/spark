@@ -1,4 +1,4 @@
-package org.training.spark.practice.assignmentone
+package org.training.spark.practice.core.assignmentone
 
 import org.apache.spark.{SparkConf, SparkContext}
 /*IPL Match Analysis - Best First Bat win stadium & percentage , Best First Bowl Win Stadium & Percentage*/
